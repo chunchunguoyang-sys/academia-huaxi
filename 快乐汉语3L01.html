@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中文词组学习卡片 - 华西书院</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* ——— Header y footer propios eliminados; ahora se inyectan ——— */
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab-button {
+            padding: 14px 28px;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin: 0 8px 10px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .tab-button.active {
+            background: linear-gradient(to right, #4776E6, #8E54E9);
+            transform: translateY(-2px);
+        }
+
+        .tab-content {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 词卡样式 */
+        .flashcards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+
+        .flashcard {
+            height: 200px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .flashcard-logo {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            width: 60px;
+            height: 60px;
+            background-color: #ff9e01;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .logo-img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+
+        .flashcard.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .flashcard-front {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            color: white;
+        }
+
+        .flashcard-back {
+            background: linear-gradient(135deg, #ff7e5f, #feb47b);
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        .chinese {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .pinyin {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #f0f0f0;
+        }
+
+        .spanish {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .speaker {
+            margin-top: 15px;
+            background-color: rgba(255, 255, 255, 0.2);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .speaker:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+
+        .hint {
+            margin-top: 15px;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* 记忆游戏样式 */
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 25px;
+            background: linear-gradient(to right, #43cea2, #185a9d);
+            color: white;
+            padding: 18px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            height: 96px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-logo {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            z-index: 10;
+            width: 40px;
+            height: 40px;
+            background-color: #ff9e01;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .card-logo .logo-img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+            border-radius: 50%;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.5s;
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            padding: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, #4776E6, #8E54E9);
+            color: white;
+            font-size: 1.8rem;
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            color: white;
+            transform: rotateY(180deg);
+            font-size: 1.2rem;
+        }
+
+        .card.matched .card-back {
+            background: linear-gradient(135deg, #FF512F, #F09819);
+        }
+
+        .game-pinyin {
+            font-size: 0.9rem;
+            margin-top: 5px;
+            color: #f0f0f0;
+        }
+
+        /* 消消乐游戏样式 */
+        .match-game-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .match-card {
+            height: 90px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            position: relative;
+        }
+
+        .match-card.chinese-card {
+            background: linear-gradient(135deg, #4776E6, #8E54E9);
+            color: white;
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .match-card.spanish-card {
+            background: linear-gradient(135deg, #43cea2, #185a9d);
+            color: white;
+            font-size: 1.1rem;
+        }
+
+        .match-card.selected {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 3px #FF512F, 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .match-card.matched {
+            opacity: 0.3;
+            transform: scale(0.9);
+            cursor: default;
+        }
+
+        .match-card-pinyin {
+            font-size: 0.8rem;
+            margin-top: 4px;
+            color: #f0f0f0;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            background: linear-gradient(to right, #4776E6, #8E54E9);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            margin: 0 12px 15px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:disabled {
+            background: linear-gradient(to right, #cccccc, #999999);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .completion-message {
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            font-size: 1.5rem;
+            color: #2575fc;
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .game-board, .match-game-board {
+                grid-template-columns: repeat(5, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .flashcards-container {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+
+            .game-board, .match-game-board {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .chinese {
+                font-size: 1.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .flashcards-container, .game-board, .match-game-board {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .game-info {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Header compartido -->
+<div id="header"></div>
+
+<div class="container">
+    <!-- Título/subtítulo locales (opcional) -->
+    <h1 style="text-align:center;color:white;margin-bottom:10px;">中文词组学习卡片</h1>
+    <p style="text-align:center;color:#f0f0f0;font-size:1.1rem;margin-bottom:25px;">Tarjetas de Aprendizaje de Palabras Chinas</p>
+
+    <div class="instructions" style="background:#e3f2fd;border-left:5px solid #2196f3;padding:15px;border-radius:10px;margin:20px 0;font-size:1.05rem;">
+        <p><i class="fas fa-lightbulb"></i> Haz clic en las tarjetas para voltearlas y ver la traducción. Usa el altavoz para escuchar la pronunciación.</p>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-button active" data-tab="flashcards">Tarjetas de Vocabulario</button>
+        <button class="tab-button" data-tab="game">Juego de Memoria</button>
+        <button class="tab-button" data-tab="match-game">Juego de Emparejar</button>
+    </div>
+
+    <div id="flashcards" class="tab-content active">
+        <h2>Palabras Chinas - Aprende con Tarjetas</h2>
+        <p>Haz clic en cualquier tarjeta para ver la traducción al español y la pronunciación</p>
+        <div class="flashcards-container" id="flashcards-container"></div>
+    </div>
+
+    <div id="game" class="tab-content">
+        <h2>Juego de Memoria - Emparejar Chino y Español</h2>
+        <p>Encuentra todas las parejas correspondientes entre chino y español</p>
+        <div class="game-info">
+            <div>Parejas: <span id="matches">0</span>/<span id="total-pairs">10</span></div>
+            <div>Intentos: <span id="attempts">0</span></div>
+            <div>Tiempo: <span id="timer">0</span> segundos</div>
+        </div>
+        <div class="game-board" id="game-board"></div>
+        <div class="completion-message" id="completion-message">
+            <p>¡Felicidades! Has completado el juego.</p>
+            <p>Tiempo: <span id="final-time">0</span> segundos | Intentos: <span id="final-attempts">0</span></p>
+        </div>
+        <div class="controls">
+            <button class="btn" id="start-game">Comenzar Juego</button>
+            <button class="btn" id="reset-game" disabled>Reiniciar</button>
+        </div>
+    </div>
+
+    <div id="match-game" class="tab-content">
+        <h2>Juego de Emparejar - Encuentra las Parejas</h2>
+        <p>Haz clic en las tarjetas para encontrar las parejas entre chino y español</p>
+        <div class="game-info">
+            <div>Parejas: <span id="match-matches">0</span>/<span id="match-total-pairs">10</span></div>
+            <div>Intentos: <span id="match-attempts">0</span></div>
+            <div>Tiempo: <span id="match-timer">0</span> segundos</div>
+        </div>
+        <div class="match-game-board" id="match-game-board"></div>
+        <div class="completion-message" id="match-completion-message">
+            <p>¡Felicidades! Has completado el juego de emparejar.</p>
+            <p>Tiempo: <span id="match-final-time">0</span> segundos | Intentos: <span id="match-final-attempts">0</span></p>
+        </div>
+        <div class="controls">
+            <button class="btn" id="start-match-game">Comenzar Juego</button>
+            <button class="btn" id="reset-match-game" disabled>Reiniciar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Footer compartido -->
+<div id="footer"></div>
+
+<!-- Audio -->
+<audio id="flip-sound" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+</audio>
+<audio id="match-sound" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-chimes-2015.mp3" type="audio/mpeg">
+</audio>
+<audio id="win-sound" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-winning-trumpet-2018.mp3" type="audio/mpeg">
+</audio>
+<audio id="select-sound" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-game-ball-tap-2076.mp3" type="audio/mpeg">
+</audio>
+
+<!-- Inserta header/footer -->
+<script src="include.js"></script>
+
+<!-- JS del juego (sin cambios funcionales) -->
+<script>
+    // Datos de palabras chinas (中文, 拼音, 西班牙语) 
+ const chineseWords = [
+    { chinese: "从", pinyin: "cóng", spanish: "Desde" },
+    { chinese: "姓名", pinyin: "xìngmíng", spanish: "Nombre completo" },
+    { chinese: "性别", pinyin: "xìngbié", spanish: "Sexo / Género" },
+    { chinese: "出生", pinyin: "chūshēng", spanish: "Nacer" },
+    { chinese: "日期", pinyin: "rìqī", spanish: "Fecha" },
+    { chinese: "地点", pinyin: "dìdiǎn", spanish: "Lugar" },
+    { chinese: "职业", pinyin: "zhíyè", spanish: "Profesión" },
+    { chinese: "住址", pinyin: "zhùzhǐ", spanish: "Domicilio / Dirección" },
+    { chinese: "电话", pinyin: "diànhuà", spanish: "Teléfono" },
+    { chinese: "电子邮件", pinyin: "diànzi yóujiàn", spanish: "Correo electrónico" }
+];
+
+    // Funcionalidad de pestañas
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            button.classList.add('active');
+            document.getElementById(button.dataset.tab).classList.add('active');
+        });
+    });
+
+    // Generar tarjetas de vocabulario
+    function generateFlashcards() {
+        const container = document.getElementById('flashcards-container');
+        container.innerHTML = '';
+        chineseWords.forEach(word => {
+            const flashcard = document.createElement('div');
+            flashcard.className = 'flashcard';
+            flashcard.innerHTML = `
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <div class="flashcard-logo">
+                                <div style="width:100%;height:100%;display:flex;justify-content:center;align-items:center;color:white;font-weight:bold;font-size:0.8rem;text-align:center;">
+                                    华西<br>书院
+                                </div>
+                            </div>
+                            <div class="chinese">${word.chinese}</div>
+                            <div class="hint">Haz clic para ver traducción</div>
+                            <div class="speaker" data-text="${word.chinese}">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                        </div>
+                        <div class="flashcard-back">
+                            <div class="pinyin">${word.pinyin}</div>
+                            <div class="spanish">${word.spanish}</div>
+                            <div class="speaker" data-text="${word.chinese}">
+                                <i class="fas fa-volume-up"></i>
+                            </div>
+                            <div class="hint">Haz clic para volver</div>
+                        </div>
+                    </div>
+                `;
+            flashcard.addEventListener('click', (e) => {
+                if (!e.target.closest('.speaker')) flashcard.classList.toggle('flipped');
+            });
+            flashcard.querySelectorAll('.speaker').forEach(s => {
+                s.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const text = s.getAttribute('data-text');
+                    speakText(text);
+                });
+            });
+            container.appendChild(flashcard);
+        });
+    }
+
+    // Voz
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'zh-CN';
+            u.rate = 0.8;
+            window.speechSynthesis.speak(u);
+        } else {
+            alert('Tu navegador no soporta la función de voz. Usa Chrome o Edge.');
+        }
+    }
+
+    // ====== Juego de memoria ======
+    let gameStarted = false;
+    let flippedCards = [];
+    let matches = 0;
+    let attempts = 0;
+    let timer = 0;
+    let timerInterval;
+
+    const flipSound = document.getElementById('flip-sound');
+    const matchSound = document.getElementById('match-sound');
+    const winSound = document.getElementById('win-sound');
+    const selectSound = document.getElementById('select-sound');
+
+    function generateGameCards() {
+        const gameBoard = document.getElementById('game-board');
+        gameBoard.innerHTML = '';
+        const gameWords = [...chineseWords];
+        const cards = [];
+        gameWords.forEach(word => {
+            cards.push({ type: 'chinese', content: word.chinese, pair: word.spanish, id: word.chinese });
+            cards.push({ type: 'spanish', content: word.spanish, pair: word.chinese, pinyin: word.pinyin, id: word.chinese });
+        });
+        shuffleArray(cards);
+        cards.forEach(card => {
+            const el = document.createElement('div');
+            el.className = 'card';
+            el.dataset.id = card.id;
+            el.dataset.type = card.type;
+            el.dataset.pair = card.pair;
+            el.innerHTML = (card.type === 'chinese')
+                ? `<div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-logo"><div style="width:100%;height:100%;display:flex;justify-content:center;align-items:center;color:white;font-weight:bold;font-size:0.6rem;text-align:center;">华西<br>书院</div></div>
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <div class="card-back">${card.content}</div>
+                      </div>`
+                : `<div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-logo"><div style="width:100%;height:100%;display:flex;justify-content:center;align-items:center;color:white;font-weight:bold;font-size:0.6rem;text-align:center;">华西<br>书院</div></div>
+                            <i class="fas fa-question"></i>
+                        </div>
+                        <div class="card-back">${card.content}<div class="game-pinyin">${card.pinyin}</div></div>
+                      </div>`;
+            el.addEventListener('click', () => flipCard(el));
+            gameBoard.appendChild(el);
+        });
+        document.getElementById('total-pairs').textContent = gameWords.length;
+        document.getElementById('matches').textContent = '0';
+        document.getElementById('attempts').textContent = '0';
+    }
+
+    function shuffleArray(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+
+    function flipCard(card) {
+        if (!gameStarted || card.classList.contains('flipped') || card.classList.contains('matched') || flippedCards.length >= 2) return;
+        card.classList.add('flipped');
+        flippedCards.push(card);
+        try { flipSound.currentTime = 0; flipSound.play().catch(()=>{}); } catch(e){}
+        if (flippedCards.length === 2) {
+            attempts++;
+            document.getElementById('attempts').textContent = attempts;
+            checkForMatch();
+        }
+    }
+
+    function checkForMatch() {
+        const [a, b] = flippedCards;
+        if (a.dataset.id === b.dataset.id && a.dataset.type !== b.dataset.type) {
+            a.classList.add('matched');
+            b.classList.add('matched');
+            matches++;
+            document.getElementById('matches').textContent = matches;
+            try { matchSound.currentTime = 0; matchSound.play().catch(()=>{}); } catch(e){}
+            flippedCards = [];
+            if (matches === parseInt(document.getElementById('total-pairs').textContent)) endGame();
+        } else {
+            setTimeout(() => { a.classList.remove('flipped'); b.classList.remove('flipped'); flippedCards = []; }, 1000);
+        }
+    }
+
+    function startGame(){
+        if (gameStarted) return;
+        gameStarted = true; matches = 0; attempts = 0; timer = 0;
+        document.getElementById('matches').textContent = '0';
+        document.getElementById('attempts').textContent = '0';
+        document.getElementById('timer').textContent = '0';
+        document.getElementById('start-game').disabled = true;
+        document.getElementById('reset-game').disabled = false;
+        document.getElementById('completion-message').style.display = 'none';
+        timerInterval = setInterval(()=>{ timer++; document.getElementById('timer').textContent = timer; },1000);
+        generateGameCards();
+    }
+
+    function endGame(){
+        clearInterval(timerInterval); gameStarted = false;
+        try { winSound.currentTime = 0; winSound.play().catch(()=>{}); } catch(e){}
+        document.getElementById('final-time').textContent = timer;
+        document.getElementById('final-attempts').textContent = attempts;
+        document.getElementById('completion-message').style.display = 'block';
+    }
+
+    function resetGame(){
+        clearInterval(timerInterval); gameStarted = false; flippedCards = [];
+        document.getElementById('start-game').disabled = false;
+        document.getElementById('reset-game').disabled = true;
+        document.getElementById('completion-message').style.display = 'none';
+        generateGameCards();
+    }
+
+    // ====== Juego de emparejar ======
+    let matchGameStarted = false;
+    let selectedCards = [];
+    let matchMatches = 0;
+    let matchAttempts = 0;
+    let matchTimer = 0;
+    let matchTimerInterval;
+
+    function generateMatchGameCards() {
+        const board = document.getElementById('match-game-board');
+        board.innerHTML = '';
+        const gameWords = [...chineseWords];
+        const cards = [];
+        gameWords.forEach(w=>{
+            cards.push({ type:'chinese', content:w.chinese, pair:w.spanish, pinyin:w.pinyin, id:w.chinese });
+            cards.push({ type:'spanish', content:w.spanish, pair:w.chinese, pinyin:w.pinyin, id:w.chinese });
+        });
+        shuffleArray(cards);
+        cards.forEach(card=>{
+            const el = document.createElement('div');
+            el.className = `match-card ${card.type}-card`;
+            el.dataset.id = card.id; el.dataset.type = card.type; el.dataset.pair = card.pair;
+            el.innerHTML = (card.type==='chinese')
+                ? `<div>${card.content}</div>`
+                : `<div>${card.content}</div><div class="match-card-pinyin">${card.pinyin}</div>`;
+            el.addEventListener('click',()=>selectMatchCard(el));
+            board.appendChild(el);
+        });
+        document.getElementById('match-total-pairs').textContent = gameWords.length;
+        document.getElementById('match-matches').textContent = '0';
+        document.getElementById('match-attempts').textContent = '0';
+    }
+
+    function selectMatchCard(card){
+        if (!matchGameStarted || card.classList.contains('matched') || card.classList.contains('selected') || selectedCards.length>=2) return;
+        card.classList.add('selected');
+        selectedCards.push(card);
+        try { selectSound.currentTime = 0; selectSound.play().catch(()=>{}); } catch(e){}
+        if (selectedCards.length===2){
+            matchAttempts++;
+            document.getElementById('match-attempts').textContent = matchAttempts;
+            checkMatchForMatch();
+        }
+    }
+
+    function checkMatchForMatch(){
+        const [a,b] = selectedCards;
+        if (a.dataset.id===b.dataset.id && a.dataset.type!==b.dataset.type){
+            setTimeout(()=>{
+                a.classList.add('matched'); b.classList.add('matched');
+                matchMatches++; document.getElementById('match-matches').textContent = matchMatches;
+                try { matchSound.currentTime = 0; matchSound.play().catch(()=>{}); } catch(e){}
+                selectedCards = [];
+                if (matchMatches === parseInt(document.getElementById('match-total-pairs').textContent)) endMatchGame();
+            },500);
+        } else {
+            setTimeout(()=>{ a.classList.remove('selected'); b.classList.remove('selected'); selectedCards = []; },1000);
+        }
+    }
+
+    function startMatchGame(){
+        if (matchGameStarted) return;
+        matchGameStarted = true; matchMatches=0; matchAttempts=0; matchTimer=0;
+        document.getElementById('match-matches').textContent='0';
+        document.getElementById('match-attempts').textContent='0';
+        document.getElementById('match-timer').textContent='0';
+        document.getElementById('start-match-game').disabled = true;
+        document.getElementById('reset-match-game').disabled = false;
+        document.getElementById('match-completion-message').style.display = 'none';
+        matchTimerInterval = setInterval(()=>{ matchTimer++; document.getElementById('match-timer').textContent = matchTimer; },1000);
+        generateMatchGameCards();
+    }
+
+    function endMatchGame(){
+        clearInterval(matchTimerInterval); matchGameStarted=false;
+        try { winSound.currentTime = 0; winSound.play().catch(()=>{}); } catch(e){}
+        document.getElementById('match-final-time').textContent = matchTimer;
+        document.getElementById('match-final-attempts').textContent = matchAttempts;
+        document.getElementById('match-completion-message').style.display = 'block';
+    }
+
+    function resetMatchGame(){
+        clearInterval(matchTimerInterval); matchGameStarted=false; selectedCards=[];
+        document.getElementById('start-match-game').disabled=false;
+        document.getElementById('reset-match-game').disabled=true;
+        document.getElementById('match-completion-message').style.display='none';
+        generateMatchGameCards();
+    }
+
+    // Inicializar
+    document.addEventListener('DOMContentLoaded', () => {
+        generateFlashcards();
+        generateGameCards();
+        generateMatchGameCards();
+        document.getElementById('start-game').addEventListener('click', startGame);
+        document.getElementById('reset-game').addEventListener('click', resetGame);
+        document.getElementById('start-match-game').addEventListener('click', startMatchGame);
+        document.getElementById('reset-match-game').addEventListener('click', resetMatchGame);
+    });
+</script>
+</body>
+</html>
