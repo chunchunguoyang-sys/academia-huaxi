@@ -6,8 +6,25 @@
 <style>
   body { font-family: Arial, sans-serif; text-align:center; }
   .hidden { display:none; }
-  #grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; max-width:500px; margin:20px auto; }
-  .card { padding:20px; background:#f0f0f0; border-radius:10px; cursor:pointer; font-size:20px; user-select:none; }
+
+  /* ⭐⭐⭐ Level1 自适应+字体20%增强 ⭐⭐⭐ */
+  #grid { 
+    display:grid; 
+    grid-template-columns:repeat(4, minmax(80px,1fr)); /* 自动适配列宽 */
+    gap:14px;                                          /* 原10px→放大20% */
+    max-width:80%;                                     /* 两侧留出≈3列宽 */
+    margin:30px auto;                                  /* 居中+更舒适边距 */
+  }
+  .card { 
+    padding:24px;             /* 原20 → +20% */
+    font-size:24px;           /* 原20 → +20% */
+    background:#f0f0f0; 
+    border-radius:12px;       /* 原10 → +美观微增加 */
+    cursor:pointer; 
+    user-select:none; 
+    transition:0.25s;         /* 增加轻动画 */
+  }
+
   #timer,#progress { font-size:20px; margin:10px; }
   #level2 input { padding:8px; font-size:18px; }
   button { padding:8px 15px; margin:5px; font-size:16px; }
@@ -42,7 +59,7 @@
   <button onclick="openLevel(2)">Escribir en chino</button>
 </div>
 
-<!-- Level 1 消消乐 -->
+<!-- ----------------- Level 1 消消乐 ----------------- -->
 <div id="level1" class="hidden">
   <h2>第一关：Emparejar</h2>
   <div>
@@ -54,11 +71,11 @@
   <div id="grid"></div>
 </div>
 
-<!-- Level 2 输入中文 -->
+<!-- ----------------- Level 2 输入中文 ----------------- -->
 <div id="level2" class="hidden">
   <h2>第二关：Escribir en chino</h2>
 
-  <!-- ★★★★★ 进度条在这里 ★★★★★ -->
+  <!-- 进度条 -->
   <div id="barBox"><div id="bar"></div></div>
 
   <div>
@@ -78,6 +95,7 @@
 </div>
 
 <script>
+/* -------------------- 词库 -------------------- */
 const words = [
   {zh:"桌子", es:"mesa", py:"zhuō zi"},
   {zh:"上", es:"encima", py:"shàng"},
@@ -94,236 +112,139 @@ const words = [
   {zh:"坐", es:"sentarse", py:"zuò"},  
 ];
 
-// -------- 全局变量 --------
+/* ----------------计时器---------------- */
 let time = 0;
 let timerInterval = null;
-let level1Active = false;
-let level2Active = false;
+function updateTimerDisplay(){ document.getElementById('timer').innerText = `时间: ${time} 秒`; }
+function startTimer(){ if(timerInterval) return; timerInterval=setInterval(()=>{time++;updateTimerDisplay();},1000);}
+function stopTimer(){ clearInterval(timerInterval); timerInterval=null; }
+function resetTimer(){ stopTimer(); time=0; updateTimerDisplay(); }
 
-// -------- 计时器 --------
-function updateTimerDisplay(){
-  document.getElementById('timer').innerText = `时间: ${time} 秒`;
-}
-function startTimer(){
-  if(timerInterval) return;
-  timerInterval = setInterval(()=>{
-    time++;
-    updateTimerDisplay();
-  },1000);
-}
-function stopTimer(){
-  clearInterval(timerInterval);
-  timerInterval = null;
-}
-function resetTimer(){
-  stopTimer();
-  time = 0;
-  updateTimerDisplay();
-}
-
-// -------- 主菜单 & 关卡切换 --------
+/* ----------------关卡切换---------------- */
 function openLevel(n){
   document.getElementById('menu').classList.add('hidden');
   document.getElementById('progress').innerText = '';
-  if(n===1){
-    document.getElementById('level1').classList.remove('hidden');
-    document.getElementById('level2').classList.add('hidden');
-    prepareLevel1();
-  }
-  if(n===2){
-    document.getElementById('level2').classList.remove('hidden');
-    document.getElementById('level1').classList.add('hidden');
-    prepareLevel2();
-  }
+  if(n===1){ document.getElementById('level1').classList.remove('hidden'); document.getElementById('level2').classList.add('hidden'); prepareLevel1();}
+  if(n===2){ document.getElementById('level2').classList.remove('hidden'); document.getElementById('level1').classList.add('hidden'); prepareLevel2();}
 }
-
 function goHome(){
-  stopTimer();
-  resetTimer();
-  level1Active = false;
-  level2Active = false;
+  stopTimer(); resetTimer();
+  level1Active=false; level2Active=false;
   document.getElementById('menu').classList.remove('hidden');
   document.getElementById('level1').classList.add('hidden');
   document.getElementById('level2').classList.add('hidden');
   document.getElementById('summary1').innerText='';
   document.getElementById('summary2').innerText='';
-  document.getElementById('progress').innerText = '请选择一个练习';
 }
 
-// ---------- Level 1 消消乐 ----------
-let pairs = [];
-let selected = [];
-let correct1 = 0;
-let attempts1 = 0;
-const grid = document.getElementById('grid');
+/* ================== Level 1 ================== */
+let pairs=[],selected=[],correct1=0,attempts1=0;
+let grid=document.getElementById('grid');
+let level1Active=false;
 
 function prepareLevel1(){
-  pairs = [];
-  words.forEach(w=>{
-    pairs.push({t:w.zh, match:w.es});
-    pairs.push({t:w.es, match:w.zh});
-  });
+  pairs=[]; words.forEach(w=>{pairs.push({t:w.zh,match:w.es});pairs.push({t:w.es,match:w.zh});});
   pairs.sort(()=>Math.random()-0.5);
-
-  grid.innerHTML = '';
-  correct1 = 0;
-  attempts1 = 0;
-  selected = [];
-  level1Active = false;
-  document.getElementById('summary1').innerText = '';
-  resetTimer();
+  grid.innerHTML=''; correct1=0; attempts1=0; selected=[];
+  level1Active=false; resetTimer(); document.getElementById('summary1').innerText='';
 
   pairs.forEach(p=>{
-    const div = document.createElement('div');
-    div.className='card';
-    div.innerText = p.t;
-    div.dataset.match = p.match;
-    div.dataset.active = 'false';
-    div.onclick = ()=> selectCard(div);
+    const div=document.createElement('div');
+    div.className='card'; div.innerText=p.t;
+    div.dataset.match=p.match; div.dataset.active='false';
+    div.onclick=()=>selectCard(div);
     grid.appendChild(div);
   });
 }
-
 function startLevel1Run(){
-  if(level1Active) return;
-  level1Active = true;
-  Array.from(grid.children).forEach(c=> c.dataset.active='true');
-  resetTimer();
-  startTimer();
+  level1Active=true;
+  Array.from(grid.children).forEach(c=>c.dataset.active='true');
+  resetTimer(); startTimer();
 }
-
 function selectCard(div){
   if(!level1Active) return;
-  if(selected.length===2 || div.classList.contains('done') || div.dataset.active!=='true') return;
+  if(selected.length===2||div.classList.contains('done')||div.dataset.active!=='true') return;
 
-  div.style.background = '#cfc';
-  selected.push(div);
+  div.style.background='#cfc'; selected.push(div);
 
   if(selected.length===2){
     attempts1++;
-    const d0 = selected[0];
-    const d1 = selected[1];
-    const match = d0.dataset.match === d1.innerText || d1.dataset.match === d0.innerText;
+    let [d0,d1]=selected;
+    let match=d0.dataset.match===d1.innerText||d1.dataset.match===d0.innerText;
 
-    if(match){ // 如果匹配对了
-      selected.forEach(s=>{
-        s.classList.add('done');
-        s.style.visibility='hidden';
-        s.dataset.active='false';
-      });
-      correct1++;
-      selected = [];
-
+    if(match){
+      selected.forEach(s=>{s.classList.add('done');s.style.visibility='hidden';s.dataset.active='false';});
+      correct1++; selected=[];
       if(correct1===words.length){
-        level1Active = false;
-        stopTimer();
-        document.getElementById('summary1').innerText =
-        `完成！共用时 ${time} 秒。尝试次数：${attempts1}。
-Finished! Time: ${time} s. Attempts: ${attempts1}.`;
+        level1Active=false; stopTimer();
+        document.getElementById('summary1').innerText=`完成！${time}秒，尝试${attempts1}次\nFinished ${time}s Attempts ${attempts1}`;
       }
     } else {
-  // ❌ 错误：先变红
-  selected.forEach(s => s.style.background = '#f99'); // 红色
-
-  // ⏳ 再恢复原来的灰色
-  setTimeout(() => {
-    selected.forEach(s => s.style.background = '#f0f0f0');
-    selected = [];
-  }, 500);
-}
-
+      /* ❌ 你要求的效果—错误先变红，再恢复 */
+      selected.forEach(s=>s.style.background='#f99');
+      setTimeout(()=>{ selected.forEach(s=>s.style.background='#f0f0f0'); selected=[] },500);
+    }
   }
 }
 
-// ---------- Level 2 输入中文 ----------
-let index = 0;
-let order = [];
-let correct2 = 0;
-let attempts2 = 0;
+/* ================== Level 2 ================== */
+let index=0,order=[],correct2=0,attempts2=0,level2Active=false;
 
 function prepareLevel2(){
-  order = [...words];
-  order.sort(()=>Math.random()-0.5);
-  index = 0;
-  correct2 = 0;
-  attempts2 = 0;
-  level2Active = false;
-
-  document.getElementById('answer').disabled = true;
-  document.getElementById('answer').value = '';
-  document.getElementById('feedback').innerText = '';
-  document.getElementById('summary2').innerText = '';
-
-  updateBar();   // ★ 重置进度条
-
-  loadQ();
+  order=[...words].sort(()=>Math.random()-0.5);
+  index=0;correct2=0;attempts2=0;level2Active=false;
+  document.getElementById('answer').disabled=true;
+  document.getElementById('answer').value='';
+  document.getElementById('feedback').innerText='';
+  document.getElementById('summary2').innerText='';
+  updateBar(); loadQ();
 }
-
 function startLevel2Run(){
-  if(level2Active) return;
-  level2Active = true;
-  document.getElementById('answer').disabled = false;
+  level2Active=true;
+  document.getElementById('answer').disabled=false;
   document.getElementById('answer').focus();
-  resetTimer();
-  startTimer();
+  resetTimer(); startTimer();
 }
 
-// ------ 更新进度条 ------
-function updateBar(){
-  const percent = (index / words.length) * 100;
-  document.getElementById('bar').style.width = percent + "%";
-}
+/* --- 进度条 --- */
+function updateBar(){ document.getElementById('bar').style.width=(index/words.length)*100+"%"; }
 
 function loadQ(){
-  document.getElementById('question').innerHTML = `
-    <span>Por favor escribe el chino:<br>
-      <span style="font-size:28px;">${order[index].es}</span>
-    </span>
-  `;
+  document.getElementById('question').innerHTML=`写中文:<br><span style="font-size:28px;">${order[index].es}</span>`;
   document.getElementById('answer').value='';
   document.getElementById('feedback').innerText='';
 }
 
 function checkAnswer(){
   if(!level2Active) return;
-  const a = document.getElementById('answer').value.trim();
+  const a=document.getElementById('answer').value.trim();
   attempts2++;
 
-  if(a === order[index].zh){
-    document.getElementById('feedback').innerText = `好厉害！ Muy bien!`;
-    correct2++;
-    index++;
+  if(a===order[index].zh){
+    document.getElementById('feedback').innerText='好厉害 Muy bien!';
+    correct2++; index++; updateBar();
 
-    updateBar();   // ★ 每答对1题，更新进度条
+    if(index===order.length){
+      level2Active=false; stopTimer(); updateBar();
+      document.getElementById('summary2').innerText=
+      `完成:${correct2}/${order.length} 用时${time}秒 Intentos:${attempts2}`;
+    }else setTimeout(loadQ,600);
 
-    if(index === order.length){
-      level2Active = false;
-      stopTimer();
-      updateBar();
-      document.getElementById('summary2').innerText =
-        `完成！共答对 ${correct2}/${order.length} 题，用时 ${time} 秒，尝试 ${attempts2} 次。
-¡Completado! Aciertos: ${correct2}/${order.length}, Tiempo: ${time} s, Intentos: ${attempts2}.`;
-    } else {
-      setTimeout(loadQ,600);
-    }
-  } else {
-    document.getElementById('feedback').innerText = `不正确，请再试一次。 / Incorrecto, inténtalo de nuevo.`;
-  }
+  }else document.getElementById('feedback').innerText='不正确❌ inténtalo otra vez';
 }
 
 function showHint(){
   if(!level2Active) return;
-  const zh = order[index].zh;
-  const py = order[index].py.split(" ").map(p => p[0] + "...").join(" ");
-  document.getElementById('feedback').innerHTML = `${zh}<br>${py}`;
+  let zh=order[index].zh;
+  let py=order[index].py.split(" ").map(p=>p[0]+"...").join(" ");
+  document.getElementById('feedback').innerHTML=`${zh}<br>${py}`;
 }
-
 function showFull(){
   if(!level2Active) return;
-  document.getElementById('feedback').innerText = `${order[index].zh} (${order[index].py})`;
+  document.getElementById('feedback').innerText=`${order[index].zh} (${order[index].py})`;
 }
 
-// ---------- 初始化 Level 1 ----------
+/* 初始化 */
 prepareLevel1();
 </script>
 </body>
