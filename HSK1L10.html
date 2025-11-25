@@ -205,7 +205,7 @@ function selectCard(div){
     const d1 = selected[1];
     const match = d0.dataset.match === d1.innerText || d1.dataset.match === d0.innerText;
 
-    if(match){
+    if(match){ // 如果匹配对了
       selected.forEach(s=>{
         s.classList.add('done');
         s.style.visibility='hidden';
@@ -222,11 +222,16 @@ function selectCard(div){
 Finished! Time: ${time} s. Attempts: ${attempts1}.`;
       }
     } else {
-      setTimeout(()=>{
-        selected.forEach(s=> s.style.background='#f0f0f0');
-        selected = [];
-      }, 500);
-    }
+  // ❌ 错误：先变红
+  selected.forEach(s => s.style.background = '#f99'); // 红色
+
+  // ⏳ 再恢复原来的灰色
+  setTimeout(() => {
+    selected.forEach(s => s.style.background = '#f0f0f0');
+    selected = [];
+  }, 500);
+}
+
   }
 }
 
