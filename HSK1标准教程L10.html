@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>Juego de vocabulario HSK </title>
+<style>
+  body { font-family: Arial, sans-serif; text-align:center; }
+  .hidden { display:none; }
+
+  /* ⭐⭐⭐ Level1 自适应+字体20%增强 ⭐⭐⭐ */
+  #grid { 
+    display:grid; 
+    grid-template-columns:repeat(4, minmax(80px,1fr)); /* 自动适配列宽 */
+    gap:14px;                                          /* 原10px→放大20% */
+    max-width:80%;                                     /* 两侧留出≈3列宽 */
+    margin:30px auto;                                  /* 居中+更舒适边距 */
+  }
+  .card { 
+    padding:24px;             /* 原20 → +20% */
+    font-size:24px;           /* 原20 → +20% */
+    background:#f0f0f0; 
+    border-radius:12px;       /* 原10 → +美观微增加 */
+    cursor:pointer; 
+    user-select:none; 
+    transition:0.25s;         /* 增加轻动画 */
+  }
+
+  #timer,#progress { font-size:20px; margin:10px; }
+  #level2 input { padding:8px; font-size:18px; }
+  button { padding:8px 15px; margin:5px; font-size:16px; }
+  #menu button { min-width:160px; }
+  .invisible { visibility:hidden; }
+
+  /* ------- 进度条样式 ------- */
+  #barBox {
+    width: 80%;
+    height: 20px;
+    background: #ddd;
+    margin: 10px auto;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  #bar {
+    height: 100%;
+    width: 0%;
+    background: #4caf50;
+    transition: width 0.4s;
+  }
+</style>
+</head>
+<body>
+<h1>HSK词语游戏</h1>
+<div id="timer">时间: 0 秒</div>
+<div id="progress"></div>
+
+<!-- 关卡选择 -->
+<div id="menu">
+  <button onclick="openLevel(1)">Emparejar</button>
+  <button onclick="openLevel(2)">Escribir en chino</button>
+</div>
+
+<!-- ----------------- Level 1 消消乐 ----------------- -->
+<div id="level1" class="hidden">
+  <h2>第一关：Emparejar</h2>
+  <div>
+    <button onclick="startLevel1Run()">Empezar</button>
+    <button onclick="prepareLevel1()">Reiniciar</button>
+    <button onclick="goHome()">Volver</button>
+  </div>
+  <p id="summary1"></p>
+  <div id="grid"></div>
+</div>
+
+<!-- ----------------- Level 2 输入中文 ----------------- -->
+<div id="level2" class="hidden">
+  <h2>第二关：Escribir en chino</h2>
+
+  <!-- 进度条 -->
+  <div id="barBox"><div id="bar"></div></div>
+
+  <div>
+    <button onclick="startLevel2Run()">Empezar</button>
+    <button onclick="goHome()">Volver</button>
+  </div>
+  <p id="question"></p>
+  <input id="answer" placeholder="按回车提交（Enter）" 
+         onkeydown="if(event.key==='Enter') checkAnswer()" 
+         disabled autocomplete="off">
+  <div>
+    <button onclick="showHint()">pista 🌟</button>
+    <button onclick="showFull()">solución 🌟🌟</button>
+  </div>
+  <p id="feedback"></p>
+  <p id="summary2"></p>
+</div>
+
+<script>
+/* -------------------- 词库 -------------------- */
+const words = [
+  {zh:"桌子", es:"mesa", py:"zhuō zi"},
+  {zh:"上", es:"encima", py:"shàng"},
+  {zh:"电脑", es:"ordenador", py:"diàn nǎo"},
+  {zh:"和", es:"y", py:"hé"},
+  {zh:"本", es:"cuaderno", py:"běn"},
+  {zh:"里", es:"dentro", py:"lǐ"},
+  {zh:"前面", es:"delante", py:"qián miàn"},
+  {zh:"后面", es:"detrás", py:"hòu miàn"},
+  {zh:"朋友", es:"amigo", py:"péng you"},
+  {zh:"这", es:"esto", py:"zhè"},
+  {zh:"没有", es:"no tener", py:"méi yǒu"},
+  {zh:"能", es:"poder", py:"néng"},
+  {zh:"坐", es:"sentarse", py:"zuò"},  
+];
+
+/* ----------------计时器---------------- */
+let time = 0;
+let timerInterval = null;
+function updateTimerDisplay(){ document.getElementById('timer').innerText = `时间: ${time} 秒`; }
+function startTimer(){ if(timerInterval) return; timerInterval=setInterval(()=>{time++;updateTimerDisplay();},1000);}
+function stopTimer(){ clearInterval(timerInterval); timerInterval=null; }
+function resetTimer(){ stopTimer(); time=0; updateTimerDisplay(); }
+
+/* ----------------关卡切换---------------- */
+function openLevel(n){
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('progress').innerText = '';
+  if(n===1){ document.getElementById('level1').classList.remove('hidden'); document.getElementById('level2').classList.add('hidden'); prepareLevel1();}
+  if(n===2){ document.getElementById('level2').classList.remove('hidden'); document.getElementById('level1').classList.add('hidden'); prepareLevel2();}
+}
+function goHome(){
+  stopTimer(); resetTimer();
+  level1Active=false; level2Active=false;
+  document.getElementById('menu').classList.remove('hidden');
+  document.getElementById('level1').classList.add('hidden');
+  document.getElementById('level2').classList.add('hidden');
+  document.getElementById('summary1').innerText='';
+  document.getElementById('summary2').innerText='';
+}
+
+/* ================== Level 1 ================== */
+let pairs=[],selected=[],correct1=0,attempts1=0;
+let grid=document.getElementById('grid');
+let level1Active=false;
+
+function prepareLevel1(){
+  pairs=[]; words.forEach(w=>{pairs.push({t:w.zh,match:w.es});pairs.push({t:w.es,match:w.zh});});
+  pairs.sort(()=>Math.random()-0.5);
+  grid.innerHTML=''; correct1=0; attempts1=0; selected=[];
+  level1Active=false; resetTimer(); document.getElementById('summary1').innerText='';
+
+  pairs.forEach(p=>{
+    const div=document.createElement('div');
+    div.className='card'; div.innerText=p.t;
+    div.dataset.match=p.match; div.dataset.active='false';
+    div.onclick=()=>selectCard(div);
+    grid.appendChild(div);
+  });
+}
+function startLevel1Run(){
+  level1Active=true;
+  Array.from(grid.children).forEach(c=>c.dataset.active='true');
+  resetTimer(); startTimer();
+}
+function selectCard(div){
+  if(!level1Active) return;
+  if(selected.length===2||div.classList.contains('done')||div.dataset.active!=='true') return;
+
+  div.style.background='#cfc'; selected.push(div);
+
+  if(selected.length===2){
+    attempts1++;
+    let [d0,d1]=selected;
+    let match=d0.dataset.match===d1.innerText||d1.dataset.match===d0.innerText;
+
+    if(match){
+      selected.forEach(s=>{s.classList.add('done');s.style.visibility='hidden';s.dataset.active='false';});
+      correct1++; selected=[];
+      if(correct1===words.length){
+        level1Active=false; stopTimer();
+        document.getElementById('summary1').innerText=`完成！${time}秒，尝试${attempts1}次\nFinished ${time}s Attempts ${attempts1}`;
+      }
+    } else {
+      /* ❌ 你要求的效果—错误先变红，再恢复 */
+      selected.forEach(s=>s.style.background='#f99');
+      setTimeout(()=>{ selected.forEach(s=>s.style.background='#f0f0f0'); selected=[] },500);
+    }
+  }
+}
+
+/* ================== Level 2 ================== */
+let index=0,order=[],correct2=0,attempts2=0,level2Active=false;
+
+function prepareLevel2(){
+  order=[...words].sort(()=>Math.random()-0.5);
+  index=0;correct2=0;attempts2=0;level2Active=false;
+  document.getElementById('answer').disabled=true;
+  document.getElementById('answer').value='';
+  document.getElementById('feedback').innerText='';
+  document.getElementById('summary2').innerText='';
+  updateBar(); loadQ();
+}
+function startLevel2Run(){
+  level2Active=true;
+  document.getElementById('answer').disabled=false;
+  document.getElementById('answer').focus();
+  resetTimer(); startTimer();
+}
+
+/* --- 进度条 --- */
+function updateBar(){ document.getElementById('bar').style.width=(index/words.length)*100+"%"; }
+
+function loadQ(){
+  document.getElementById('question').innerHTML=`写中文:<br><span style="font-size:28px;">${order[index].es}</span>`;
+  document.getElementById('answer').value='';
+  document.getElementById('feedback').innerText='';
+}
+
+function checkAnswer(){
+  if(!level2Active) return;
+  const a=document.getElementById('answer').value.trim();
+  attempts2++;
+
+  if(a===order[index].zh){
+    document.getElementById('feedback').innerText='好厉害 Muy bien!';
+    correct2++; index++; updateBar();
+
+    if(index===order.length){
+      level2Active=false; stopTimer(); updateBar();
+      document.getElementById('summary2').innerText=
+      `完成:${correct2}/${order.length} 用时${time}秒 Intentos:${attempts2}`;
+    }else setTimeout(loadQ,600);
+
+  }else document.getElementById('feedback').innerText='不正确❌ inténtalo otra vez';
+}
+
+function showHint(){
+  if(!level2Active) return;
+  let zh=order[index].zh;
+  let py=order[index].py.split(" ").map(p=>p[0]+"...").join(" ");
+  document.getElementById('feedback').innerHTML=`${zh}<br>${py}`;
+}
+function showFull(){
+  if(!level2Active) return;
+  document.getElementById('feedback').innerText=`${order[index].zh} (${order[index].py})`;
+}
+
+/* 初始化 */
+prepareLevel1();
+</script>
+</body>
+</html>
