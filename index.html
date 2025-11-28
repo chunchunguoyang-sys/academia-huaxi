@@ -7,116 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Inter:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        :root{
-            --bg: linear-gradient(135deg,#fff0f6 0%,#e6fcf5 50%,#e7f5ff 100%);
-            --card:#ffffffee; --ink:#263238; --muted:#546e7a; --primary:#7c4dff; --ring:#ffd166;
-        }
-        *{box-sizing:border-box}
-        html,body{height:100%}
-        body{
-            margin:0;
-            font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol";
-            color:var(--ink);
-            background:var(--bg) fixed;
-        }
-        .wrap{max-width:1100px;margin:0 auto;padding:clamp(16px,4vw,40px)}
-
-        /* ===== Header ===== */
-        header{
-            display:grid;
-            grid-template-columns: 1fr auto;
-            align-items:center;
-            gap:16px;
-            background: var(--card);
-            padding: 18px 20px;
-            border-radius: 18px;
-            box-shadow: 0 10px 30px rgba(33,33,33,.08);
-            border: 2px solid #ffffffcc;
-        }
-        .brand{display:flex;align-items:center;gap:14px;min-width:0}
-        .logo{
-            width:48px;height:48px;border-radius:14px;display:grid;place-items:center;
-            background:conic-gradient(from 180deg,#ffd166,#ff6b6b,#7c4dff,#06d6a0,#ffd166);
-            box-shadow:0 6px 14px rgba(0,0,0,.12);animation:spin 10s linear infinite;
-            mask:radial-gradient(circle at center,#0000 54%,#000 55%);flex:0 0 48px;
-        }
-        .logo::after{
-            content:"汉";
-            font-family:"Nunito",system-ui,sans-serif;font-weight:800;font-size:22px;
-            color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.2);position:relative;left:-1px;
-        }
-        @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
-        h1{font-family:"Nunito",system-ui,sans-serif;font-size:clamp(26px,3.8vw,40px);margin:0;letter-spacing:.5px;color:var(--primary)}
-        .sub{margin:0;color:var(--muted);font-weight:600}
-
-        /* ===== Right-side contact area ===== */
-        .contact-block{
-            display:flex;
-            flex-direction:column;
-            align-items:flex-end;
-        }
-        .hero-images{
-            display:flex;
-            gap:0;
-            align-items:center;
-            justify-content:flex-end;
-        }
-        .hero-images img{
-            display:block;
-            height:80px;
-            width:auto;
-            object-fit:contain;
-            border:none;
-            margin:0;
-            padding:0;
-            background:none;
-        }
-        .phone{
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            font-size:18px;
-            font-weight:700;
-            text-align:center;
-            margin-top:6px;
-            font-family:"Nunito",sans-serif;
-            gap:6px;
-        }
-        .phone svg{
-            width:18px;
-            height:18px;
-            flex-shrink:0;
-        }
-
-        @media (max-width:560px){
-            header{grid-template-columns:1fr}
-            .contact-block{align-items:flex-start;margin-top:10px}
-            .hero-images{justify-content:flex-start;flex-wrap:wrap}
-            .hero-images img{height:60px}
-            .phone{text-align:left;font-size:16px;margin-top:4px}
-        }
-
-        /* ===== Game cards ===== */
-        main{margin-top:22px}
-        .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-        .card{position:relative;background:var(--card);border-radius:18px;padding:18px;
-            box-shadow:0 10px 26px rgba(0,0,0,.08);border:1px solid #fff;
-            transition:transform .15s ease, box-shadow .15s ease;overflow:hidden;isolation:isolate;}
-        .card::before{content:"";position:absolute;inset:auto -20% 0 -20%;height:48%;
-            background:radial-gradient(120px 60px at 30% 0,#ffd16666,#0000),
-            radial-gradient(140px 70px at 75% 10%,#a78bfa66,#0000);
-            filter:blur(20px);z-index:-1;opacity:.7;transition:opacity .2s ease;}
-        .card:hover{transform:translateY(-3px);box-shadow:0 16px 34px rgba(0,0,0,.12)}
-        .tag{display:inline-block;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#f1f0ff;color:#5b42f3;border:1px solid #ecebff;letter-spacing:.2px}
-        .title{margin:10px 0 4px;font-weight:800;font-size:18px;line-height:1.2;font-family:"Nunito",system-ui,sans-serif}
-        .desc{margin:0;color:#607d8b;font-size:14px}
-        .play{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:10px 14px;border-radius:12px;background:#1a73e8;color:#fff;text-decoration:none;font-weight:700;box-shadow:0 6px 14px rgba(26,115,232,.25)}
-        .play span{font-size:13px;opacity:.95}
-        .play:focus-visible{outline:3px solid var(--ring);outline-offset:3px}
-        footer{margin:26px 0 8px;text-align:center;color:#78909c;font-size:13px}
-        .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="wrap">
@@ -149,76 +40,105 @@
     </header>
 
     <main>
+        <div class="filters">
+
+            <!-- MAIN SUBJECT TABS -->
+            <div class="filter-row">
+                <p class="filter-title">Materia:</p>
+                <button class="filter-btn subject-btn" data-subject="kuaile">Chino 快乐汉语</button>
+                <button class="filter-btn subject-btn" data-subject="math">Matemáticas</button>
+                <button class="filter-btn subject-btn" data-subject="hsk">HSK</button>
+            </div>
+
+            <!-- SUB FILTERS THAT CHANGE -->
+            <div class="filter-row subfilters" id="subfilters">
+                <!-- dynamic -->
+            </div>
+
+        </div>
+
+
         <div class="grid" role="list">
-            <article class="card" role="article">
+
+            <!-- 快乐汉语 2 (Grade 2) -->
+            <article class="card" data-subject="kuaile" data-level="grade2" role="article">
                 <span class="tag">Juego</span>
                 <h2 class="title truncate">快乐汉语 2 · Lección 19</h2>
                 <p class="desc">Tarjetas, memoria y emparejar palabras</p>
                 <a class="play" href="课程/中文/快乐汉语2/快乐汉语2L19.html">▶ Jugar <span>快乐汉语2L19</span></a>
             </article>
 
-            <article class="card" role="article">
+            <article class="card" data-subject="kuaile" data-level="grade2" role="article">
                 <span class="tag">Juego</span>
                 <h2 class="title truncate">快乐汉语 2 · Lección 18</h2>
                 <p class="desc">Tres minijuegos para repasar vocabulario</p>
                 <a class="play" href="课程/中文/快乐汉语2/快乐汉语2L18.html">▶ Jugar <span>快乐汉语2L18</span></a>
             </article>
 
-            <article class="card" role="article">
+            <article class="card" data-subject="kuaile" data-level="grade2" role="article">
                 <span class="tag">Juego</span>
                 <h2 class="title truncate">快乐汉语 2 · Lección 21</h2>
                 <p class="desc">Practica con juegos interactivos</p>
                 <a class="play" href="课程/中文/快乐汉语2/快乐汉语2L21.html">▶ Jugar <span>快乐汉语2L21</span></a>
             </article>
-      
-              <!-- 每一次加游戏要复制这一块 --> 
-            <article class="card" role="article">
+
+            <article class="card" data-subject="kuaile" data-level="grade2" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">快乐汉语 2 · Lección 24</h2> 
+                <h2 class="title truncate">快乐汉语 2 · Lección 24</h2>
                 <p class="desc">Practica con juegos interactivos</p>
                 <a class="play" href="课程/中文/快乐汉语2/快乐汉语2L24.html">▶ Jugar <span>快乐汉语2L24</span></a>
             </article>
-            <!-- 复制到这里 --> 
-            <article class="card" role="article">
+
+
+            <!-- 快乐汉语 3 (Grade 3) -->
+            <article class="card" data-subject="kuaile" data-level="grade3" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">快乐汉语 3 · Lección 01</h2> <!-- 复制后改名字 --> 
+                <h2 class="title truncate">快乐汉语 3 · Lección 01</h2>
                 <p class="desc">Practica con juegos interactivos</p>
-                <a class="play" href="课程/中文/快乐汉语3/快乐汉语3L01.html">▶ Jugar <span>快乐汉语3L01</span></a> <!-- 复制后改名字 和 链接 -->
-            </article>  
-            <!-- 复制到这里 --> 
-            <article class="card" role="article">
+                <a class="play" href="课程/中文/快乐汉语3/快乐汉语3L01.html">▶ Jugar <span>快乐汉语3L01</span></a>
+            </article>
+
+            <article class="card" data-subject="kuaile" data-level="grade3" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">快乐汉语 3 · Lección 02</h2> <!-- 复制后改名字 --> 
+                <h2 class="title truncate">快乐汉语 3 · Lección 02</h2>
                 <p class="desc">Practica con juegos interactivos</p>
-                <a class="play" href="课程/中文/快乐汉语3/快乐汉语3L02.html">▶ Jugar <span>快乐汉语3L02</span></a> <!-- 复制后改名字 和 链接 -->
-            </article>    
-            <!-- 复制到这里 --> 
-            <article class="card" role="article">
+                <a class="play" href="课程/中文/快乐汉语3/快乐汉语3L02.html">▶ Jugar <span>快乐汉语3L02</span></a>
+            </article>
+
+
+            <!-- HSK1 -->
+            <article class="card" data-subject="hsk" data-level="hsk1" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">HSK1标准教程L10</h2> <!-- 复制后改名字 --> 
+                <h2 class="title truncate">HSK1标准教程L10</h2>
                 <p class="desc">Practica con juegos interactivos</p>
-                <a class="play" href="课程/中文/HSK1标准教程/HSK1标准教程L10.html">▶ Jugar <span>HSK1标准教程L10</span></a> <!-- 复制后改名字 和 链接 -->
-            </article>  
-            <!-- 复制到这里 -->    
-            <article class="card" role="article">
+                <a class="play" href="课程/中文/HSK1标准教程/HSK1标准教程L10.html">▶ Jugar <span>HSK1标准教程L10</span></a>
+            </article>
+
+            <article class="card" data-subject="hsk" data-level="hsk1" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">HSK1标准教程L11</h2> <!-- 复制后改名字 --> 
+                <h2 class="title truncate">HSK1标准教程L11</h2>
                 <p class="desc">Practica con juegos interactivos</p>
-                <a class="play" href="课程/中文/HSK1标准教程/HSK1标准教程L11.html">▶ Jugar <span>HSK1标准教程L11</span></a> <!-- 复制后改名字 和 链接 -->
-            </article>   
-            <!-- 复制到这里 -->    
-            <article class="card" role="article">
+                <a class="play" href="课程/中文/HSK1标准教程/HSK1标准教程L11.html">▶ Jugar <span>HSK1标准教程L11</span></a>
+            </article>
+
+
+            <!-- Maths Grade 1 -->
+            <article class="card" data-subject="math" data-level="grade1" role="article">
                 <span class="tag">Juego</span>
-                <h2 class="title truncate">心算1</h2> <!-- 复制后改名字 --> 
+                <h2 class="title truncate">心算1</h2>
                 <p class="desc">Practica con juegos interactivos</p>
-                <a class="play" href="课程/数学/心算1deepseek.html">▶ Jugar <span>心算1</span></a> <!-- 复制后改名字 和 链接 -->
-            </article>   
+                <a class="play" href="课程/数学/心算1deepseek.html">▶ Jugar <span>心算1</span></a>
+            </article>
+
         </div>
+
   
     </main>
 
-    <footer>© <span id="y"></span> 快乐学中文 · ¡Aprender chino puede ser divertido! ✨</footer>
+    <footer>© <span id="y"></span> 快乐学中文 · ¡Aprender chino puede ser divertido! </footer>
 </div>
+
+<script src="filters.js"></script>
 
 <script>
     document.getElementById('y').textContent = new Date().getFullYear();
