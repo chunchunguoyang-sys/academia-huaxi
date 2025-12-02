@@ -92,9 +92,3 @@
 .site-header .title-link:hover {
     color: #5b0ce5;
 }
-/* ====== Level2 字体变大 ====== */
-.game-page #level2 { font-size: 22px; }
-.game-page #level2 h2 { font-size: 30px; }
-.game-page #question { font-size: 26px; font-weight: bold; }
-.game-page #answer { font-size: 22px; height: 40px; }
-.game-page #level2 button { font-size: 20px; }
